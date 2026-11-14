@@ -14,7 +14,7 @@ def cluster(data, k):
         # fill clusters based on current centroids
         for i in range(len(data)):
             closestIdx = 0
-            minDistance = calculateSqDistance(data[i])
+            minDistance = calculateSqDistance(data[i], centroids[0])
             # add point to cluster with nearest centroid
             # REPLACE WITH K-D TREE SEARCH?
             for j in range(1,len(centroids)):
@@ -69,11 +69,11 @@ def calculateCentroid(cluster, data):
     """
     if len(cluster) == 0:
         return data[randrange(len(data))]
-    centroid = []
+    centroid = [0 for _ in range(len(cluster[0]))]
     for i in range(len(cluster)):
         for j in range(len(cluster[0])):
             centroid[j] += cluster[i][j]
-    for i in len(range(centroid)):
+    for i in range(len(centroid)):
         centroid[i] /= len(cluster)
     return centroid
 
