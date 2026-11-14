@@ -5,7 +5,32 @@ def cluster(data, k):
     """
     cluster
     """
-    clusters = [[] for i in range(k)]
+    centroids = pickCentroids(data, k)
+
+    while True:
+        # make empty cluster
+        clusters = [[] for i in range(k)]
+
+        # fill clusters based on current centroids
+        for i in range(len(data)):
+            closestIdx = 0
+            minDistance = calculateSqDistance(data[i])
+            # add point to cluster with nearest centroid
+            # REPLACE WITH K-D TREE SEARCH?
+            for j in range(1,len(centroids)):
+                dist = calculateSqDistance(data[i], centroids[j])
+                if dist < minDistance:
+                    minDistance = dist
+                    closestIdx = j
+            clusters[closestIdx].append(data[i])
+
+        # recalculate centroids based on clusters
+        newCentroids = [calculateCentroid(cluster, data) for cluster in clusters]
+
+        # check convergence
+        if areCentroidsEqual(centroids, newCentroids):
+            return clusters
+        centroids = newCentroids
 
 
 def pickCentroids(data, k):
@@ -36,7 +61,39 @@ def pickCentroids(data, k):
                 centroids.append(data[idx])
                 break
     return centroids
+
+
+def calculateCentroid(cluster, data):
+    """
+    MAKE CENTROID OR DEFAULT
+    """
+    if len(cluster) == 0:
+        return data[randrange(len(data))]
+    centroid = []
+    for i in range(len(cluster)):
+        for j in range(len(cluster[0])):
+            centroid[j] += cluster[i][j]
+    for i in len(range(centroid)):
+        centroid[i] /= len(cluster)
+    return centroid
+
+
+def areCentroidsEqual(centroids1, centroids2):
+    """
+    check centroid equality
+    """
+    # make sure they have equal numbers of elements
+    if len(centroids1) != len(centroids2):
+        return False
+
+    # check that every element in centroid 1 is in centroid 2 once
+    for centroid in centroids1:
+        if centroid not in centroids2:
+            return False
+        centroids2.remove(centroid)
+    return True
     
+        
 
 
 def calculateSqDistance(point1, point2):
