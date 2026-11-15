@@ -1,5 +1,6 @@
 from math import sqrt
 from random import randrange, random
+from Helpers import calculateSqDistance
 
 def cluster(data, k):
     """
@@ -92,17 +93,3 @@ def areCentroidsEqual(centroids1, centroids2):
             return False
         centroids2.remove(centroid)
     return True
-    
-        
-
-
-def calculateSqDistance(point1, point2):
-    """
-    squared euclidean distance
-    """
-    if len(point1) != len(point2):
-        raise ValueError("Points do not have same numbers of coordinates")
-    sum = 0
-    for i in range(len(point1)):
-        sum += (point2[i] - point1[i])**2
-    return sum

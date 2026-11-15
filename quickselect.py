@@ -1,4 +1,9 @@
+from random import randrange
+
 def quickselect(data, dim, left=0, right=-1, k=-1):
+    """
+    select point at sorted index
+    """
     # set parameter defaults
     if right == -1:
         right = len(data)-1
@@ -23,6 +28,9 @@ def quickselect(data, dim, left=0, right=-1, k=-1):
 
 
 def partition(data, dim, left=0, right=-1, pivot=-1):
+    """
+    partition list around item
+    """
     # set parameter defaults
     if right == -1:
         right = len(data)-1
