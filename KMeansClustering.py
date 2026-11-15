@@ -1,6 +1,7 @@
+from KDSearch import buildKDTree, searchKDTree
+from Helpers import calculateSqDistance
 from math import sqrt
 from random import randrange, random
-from Helpers import calculateSqDistance
 
 def cluster(data, k):
     """
@@ -9,20 +10,15 @@ def cluster(data, k):
     centroids = pickCentroids(data, k)
 
     while True:
-        # make empty cluster
+        # make empty cluster, k-d tree for centroids
         clusters = [[] for i in range(k)]
+        tree = buildKDTree(centroids)
 
         # fill clusters based on current centroids
         for i in range(len(data)):
-            closestIdx = 0
-            minDistance = calculateSqDistance(data[i], centroids[0])
-            # add point to cluster with nearest centroid
-            # REPLACE WITH K-D TREE SEARCH?
-            for j in range(1,len(centroids)):
-                dist = calculateSqDistance(data[i], centroids[j])
-                if dist < minDistance:
-                    minDistance = dist
-                    closestIdx = j
+            # add point to cluster with nearest centroid using k-d search
+            closest = searchKDTree(tree, data[i])
+            closestIdx = centroids.index(closest)
             clusters[closestIdx].append(data[i])
 
         # recalculate centroids based on clusters
@@ -43,16 +39,14 @@ def pickCentroids(data, k):
 
     # choose other k-1 centroids (points likely far from already-selected centroids)
     while len(centroids) < k:
-        # find all points' distance to closest centroid
-        #REPLACE W/ K-D TREE???
+        # make k-d tree of centroids
+        tree = buildKDTree(centroids)
+
+        # find all points' distance to closest centroid using k-d search
         sqDists = []
         for point in data:
-            minDist = calculateSqDistance(point, centroids[0])
-            for idx in range(1,len(centroids)):
-                dist = calculateSqDistance(point, centroids[idx])
-                if dist < minDist:
-                    minDist = dist
-            sqDists.append(minDist)
+            closest = searchKDTree(tree, point)
+            sqDists.append(calculateSqDistance(closest, point))
         total = sum(sqDists)
         threshold = random()*total
         cumulativeSum = 0.0
