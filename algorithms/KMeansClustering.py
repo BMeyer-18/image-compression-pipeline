@@ -1,6 +1,5 @@
-from KDSearch import buildKDTree, searchKDTree
-from Helpers import calculateSqDistance
-from math import sqrt
+from algorithms.KDSearch import buildKDTree, searchKDTree
+from algorithms.Helpers import calculateSqDistance
 from random import randrange, random
 
 def cluster(data, k):
@@ -26,7 +25,7 @@ def cluster(data, k):
 
         # check convergence
         if areCentroidsEqual(centroids, newCentroids):
-            return clusters
+            return clusters, centroids
         centroids = newCentroids
 
 
@@ -70,7 +69,7 @@ def calculateCentroid(cluster, data):
             centroid[j] += cluster[i][j]
     for i in range(len(centroid)):
         centroid[i] /= len(cluster)
-    return centroid
+    return tuple(centroid)
 
 
 def areCentroidsEqual(centroids1, centroids2):

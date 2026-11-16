@@ -1,6 +1,5 @@
-from QuickSelect import quickselect
-from Helpers import calculateDistance
-from random import random
+from algorithms.QuickSelect import quickselect
+from algorithms.Helpers import calculateDistance
 
 class Node:
     """
