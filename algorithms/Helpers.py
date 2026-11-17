@@ -17,3 +17,12 @@ def calculateDistance(point1, point2):
     euclidean distance
     """
     return sqrt(calculateSqDistance(point1, point2))
+
+
+def pad_bit_string(string, length):
+    """
+    pad bit string with leading zeros
+    """
+    if len(string) >= length:
+        return string[:length]
+    return (length-len(string))*"0" + string

@@ -1,7 +1,7 @@
 from PIL import Image
 from algorithms.KMeansClustering import cluster
 from algorithms.HuffmanCoding import build_huffman_tree, get_huffman_codes
-from algorithms.LempelZiv import encodeLZ
+from algorithms.LempelZiv import encode_lz
 from ProcessImage import *
 
 # COMPRESS
@@ -22,8 +22,8 @@ freqs = {rounded_centroids[i]: len(clusters[i]) for i in range(len(clusters))}
 print(freqs)
 tree = build_huffman_tree(freqs)
 codes = get_huffman_codes(tree)
-print(tree)
-print(codes)
+string = encode_lz(reduced_colors, codes)
+print(string)
 
 #codes = encode_colors(image)
 # compress with lempel ziv
