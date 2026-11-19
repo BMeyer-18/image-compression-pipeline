@@ -1,14 +1,20 @@
 from algorithms.KDSearch import buildKDTree, searchKDTree
 from algorithms.Helpers import calculateSqDistance
+import numpy as np
+from scipy import spatial
 from random import randrange, random
 
-def cluster(data, k):
+def cluster(data, k, max_iter=300):
     """
     cluster
     """
     centroids = pickCentroids(data, k)
+    print('picked centroids')
+    iterations = 0
 
-    while True:
+    while iterations < max_iter:
+        iterations += 1
+
         # make empty cluster, k-d tree for centroids
         clusters = [[] for i in range(k)]
         tree = buildKDTree(centroids)
@@ -27,6 +33,8 @@ def cluster(data, k):
         if areCentroidsEqual(centroids, newCentroids):
             return clusters, centroids
         centroids = newCentroids
+        print(f"completed iteration {iterations}")
+    return clusters, centroids
 
 
 def pickCentroids(data, k):
@@ -34,26 +42,23 @@ def pickCentroids(data, k):
     kmeans++
     """
     # choose random point to be first centroid
-    centroids = [data[randrange(len(data))]]
+    centroids = np.array([data[randrange(len(data))]])
 
     # choose other k-1 centroids (points likely far from already-selected centroids)
     while len(centroids) < k:
-        # make k-d tree of centroids
-        tree = buildKDTree(centroids)
+        # find all points' distance to closest centroid using NumPy matrix operations
+        dists = np.zeros((len(data), len(centroids)))
+        for i in range(len(centroids)):
+            # set a column of dists to each point's distance from the centroid at that index
+            dists[:,i] = np.linalg.norm(data - centroids[i], axis=1)
+        
+        # condense dists to a vector with only the smallest distance to a centroid
+        sqDists = dists.min(axis=1) ** 2
 
-        # find all points' distance to closest centroid using k-d search
-        sqDists = []
-        for point in data:
-            closest = searchKDTree(tree, point)
-            sqDists.append(calculateSqDistance(closest, point))
-        total = sum(sqDists)
-        threshold = random()*total
-        cumulativeSum = 0.0
-        for idx in range(len(data)):
-            cumulativeSum += sqDists[idx]
-            if cumulativeSum >= threshold:
-                centroids.append(data[idx])
-                break
+        # set threshold based on sum, and find first point where data passes index
+        threshold = random() * sqDists.sum()
+        centroids = np.append(centroids, [data[np.where(sqDists.cumsum() >= threshold)[0][0]]], axis=0)
+        print(f"picked centroid {len(centroids)}")
     return centroids
 
 

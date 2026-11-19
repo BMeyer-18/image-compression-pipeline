@@ -1,4 +1,6 @@
 from PIL import Image
+from sklearn.cluster import KMeans
+import numpy as np
 from algorithms.KDSearch import buildKDTree, searchKDTree
 from algorithms.KMeansClustering import cluster
 from algorithms.HuffmanCoding import build_huffman_tree, get_huffman_codes
@@ -11,26 +13,36 @@ def compress_image(input_path, output_path, k):
     # load image
     image = Image.open(input_path).convert('RGB')
     dims = image.size
-    colors = list(image.getdata())
+    colors = np.array(image.getdata())
 
     # reduce colors in image (lossy)
-    clusters, centroids = cluster(colors, k)
-    rounded_centroids = [tuple(round(c) for c in color) for color in centroids]
+    clusters, centroids = cluster(colors, k, max_iter=10)
+    #kmeans = KMeans(n_clusters=8, random_state=0, n_init="auto").fit(colors)
+    #centroids = kmeans.cluster_centers_
+    #labels = kmeans.labels_
+    rounded_centroids = np.array([tuple(round(c) for c in color) for color in centroids])
+    print('completed clustering')
     reduced_colors = reduce_colors(colors, rounded_centroids)
-    save_image(reduced_colors, dims, './data/gradient_reduced.jpeg')
+    save_image(reduced_colors, dims, './data/dog_reduced.jpeg')
+    print('reduced colors')
 
     # build Huffman tree and get codes
     freqs = {rounded_centroids[i]: len(clusters[i]) for i in range(len(clusters))}
+    #freqs = {rounded_centroids[i]: sum(labels == i) for i in range(len(centroids))}
+    print(freqs)
     tree = build_huffman_tree(freqs)
     codes = get_huffman_codes(tree)
+    print('built huffman tree')
 
     # encode to binary string with Lempel-Ziv
     string, padding = encode_lz(reduced_colors, codes)
     metadata = generate_metadata_string(dims, padding, tree)
+    print('finished encoding')
 
     # convert to bytes and write to file
     byte_data = convert_to_bytes(metadata + string)
     write_to_file(byte_data, output_path)
+    print('finished compression')
 
 
 def reduce_colors(colors, centroids):

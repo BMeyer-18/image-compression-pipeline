@@ -1,4 +1,5 @@
 from math import ceil, log2
+import numpy as np
 from algorithms.Helpers import pad_bit_string
 
 def encode_lz(colors, codes):

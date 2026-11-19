@@ -1,9 +1,9 @@
 from ProcessImage import compress_image
 
 # COMPRESS
-in_path = "./data/gradient.jpg"
-out_path = "./data/grad_compressed.bin"
-k = 3
+in_path = "./data/dog.JPEG"
+out_path = "./data/dog_compressed.bin"
+k = 8
 compress_image(in_path, out_path, k)
 
 # DECOMPRESS
