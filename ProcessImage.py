@@ -1,5 +1,4 @@
 from PIL import Image
-from sklearn.cluster import KMeans
 import numpy as np
 from algorithms.KDSearch import buildKDTree, searchKDTree
 from algorithms.KMeansClustering import cluster
@@ -16,10 +15,7 @@ def compress_image(input_path, output_path, k):
     colors = np.array(image.getdata())
 
     # reduce colors in image (lossy)
-    clusters, centroids = cluster(colors, k, max_iter=10)
-    #kmeans = KMeans(n_clusters=8, random_state=0, n_init="auto").fit(colors)
-    #centroids = kmeans.cluster_centers_
-    #labels = kmeans.labels_
+    centroids, labels = cluster(colors, k, max_iter=10)
     rounded_centroids = np.array([tuple(round(c) for c in color) for color in centroids])
     print('completed clustering')
     reduced_colors = reduce_colors(colors, rounded_centroids)
@@ -27,8 +23,7 @@ def compress_image(input_path, output_path, k):
     print('reduced colors')
 
     # build Huffman tree and get codes
-    freqs = {rounded_centroids[i]: len(clusters[i]) for i in range(len(clusters))}
-    #freqs = {rounded_centroids[i]: sum(labels == i) for i in range(len(centroids))}
+    freqs = {rounded_centroids[i]: sum(labels == i) for i in range(len(centroids))}
     print(freqs)
     tree = build_huffman_tree(freqs)
     codes = get_huffman_codes(tree)

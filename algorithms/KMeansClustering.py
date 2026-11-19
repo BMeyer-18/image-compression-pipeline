@@ -1,7 +1,5 @@
 from algorithms.KDSearch import buildKDTree, searchKDTree
-from algorithms.Helpers import calculateSqDistance
 import numpy as np
-from scipy import spatial
 from random import randrange, random
 
 def cluster(data, k, max_iter=300):
@@ -15,26 +13,24 @@ def cluster(data, k, max_iter=300):
     while iterations < max_iter:
         iterations += 1
 
-        # make empty cluster, k-d tree for centroids
-        clusters = [[] for i in range(k)]
-        tree = buildKDTree(centroids)
-
-        # fill clusters based on current centroids
-        for i in range(len(data)):
-            # add point to cluster with nearest centroid using k-d search
-            closest = searchKDTree(tree, data[i])
-            closestIdx = centroids.index(closest)
-            clusters[closestIdx].append(data[i])
+        # sort points into clusters based on current centroids
+        dists = np.zeros((len(data), len(centroids)))
+        for i in range(len(centroids)):
+            # set a column of dists to each point's distance from the centroid at that index
+            dists[:,i] = np.linalg.norm(data - centroids[i], axis=1)
+        # get a vector of the same size as data, in which each value is the index of the closest centroid
+        labels = dists.argmax(axis=1)
 
         # recalculate centroids based on clusters
-        newCentroids = [calculateCentroid(cluster, data) for cluster in clusters]
+        newCentroids = np.array([calculateCentroid(data, labels, c) for c in range(len(centroids))])
 
         # check convergence
         if areCentroidsEqual(centroids, newCentroids):
-            return clusters, centroids
+            return centroids, labels
+        
         centroids = newCentroids
         print(f"completed iteration {iterations}")
-    return clusters, centroids
+    return centroids, labels
 
 
 def pickCentroids(data, k):
@@ -62,19 +58,14 @@ def pickCentroids(data, k):
     return centroids
 
 
-def calculateCentroid(cluster, data):
+def calculateCentroid(data, labels, c):
     """
     MAKE CENTROID OR DEFAULT
     """
-    if len(cluster) == 0:
+    idc = labels == c
+    if sum(idc) == 0:
         return data[randrange(len(data))]
-    centroid = [0 for _ in range(len(cluster[0]))]
-    for i in range(len(cluster)):
-        for j in range(len(cluster[0])):
-            centroid[j] += cluster[i][j]
-    for i in range(len(centroid)):
-        centroid[i] /= len(cluster)
-    return tuple(centroid)
+    return data[idc].mean(axis=0)
 
 
 def areCentroidsEqual(centroids1, centroids2):
@@ -85,9 +76,5 @@ def areCentroidsEqual(centroids1, centroids2):
     if len(centroids1) != len(centroids2):
         return False
 
-    # check that every element in centroid 1 is in centroid 2 once
-    for centroid in centroids1:
-        if centroid not in centroids2:
-            return False
-        centroids2.remove(centroid)
-    return True
+    # sort arrays to get the same order, then check equality
+    return np.array_equal(np.sort(centroids1, axis=0), np.sort(centroids2, axis=0))
