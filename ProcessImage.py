@@ -16,21 +16,20 @@ def compress_image(input_path, output_path, k):
 
     # reduce colors in image (lossy)
     centroids, labels = cluster(colors, k, max_iter=10)
-    rounded_centroids = np.array([tuple(round(c) for c in color) for color in centroids])
-    print('completed clustering')
-    reduced_colors = reduce_colors(colors, rounded_centroids)
+    rounded_centroids = centroids.round().astype(int)
+    print('completed clustering\n')
+    reduced_colors = centroids[labels]
     save_image(reduced_colors, dims, './data/dog_reduced.jpeg')
     print('reduced colors')
 
     # build Huffman tree and get codes
-    freqs = {rounded_centroids[i]: sum(labels == i) for i in range(len(centroids))}
-    print(freqs)
+    freqs = {tuple(rounded_centroids[i]): (labels == i).sum() for i in range(len(centroids))}
     tree = build_huffman_tree(freqs)
-    codes = get_huffman_codes(tree)
+    codes = get_huffman_codes(tree, rounded_centroids)
     print('built huffman tree')
 
     # encode to binary string with Lempel-Ziv
-    string, padding = encode_lz(reduced_colors, codes)
+    string, padding = encode_lz(labels, codes)
     metadata = generate_metadata_string(dims, padding, tree)
     print('finished encoding')
 
@@ -38,18 +37,6 @@ def compress_image(input_path, output_path, k):
     byte_data = convert_to_bytes(metadata + string)
     write_to_file(byte_data, output_path)
     print('finished compression')
-
-
-def reduce_colors(colors, centroids):
-    """
-    replace every color with its centroid
-    """
-    tree = buildKDTree(centroids)
-    reduced = []
-    for color in colors:
-        closest = searchKDTree(tree, color)
-        reduced.append(closest)
-    return reduced
 
 
 def generate_metadata_string(dims, padding, tree):
@@ -96,6 +83,10 @@ def write_to_file(byte_data, path):
 
 
 def save_image(colors, dims, path):
+    """
+    save image as file
+    """
+    colors_reformatted = [tuple(color.astype(int)) for color in colors]
     image = Image.new(mode="RGB", size=dims)
-    image.putdata(colors)
+    image.putdata(colors_reformatted)
     image.save(path, format="jpeg")

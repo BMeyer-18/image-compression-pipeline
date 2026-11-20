@@ -1,3 +1,5 @@
+import numpy as np
+
 def build_huffman_tree(freqs):
     """
     build tree based on frequencies of each color
@@ -13,18 +15,20 @@ def build_huffman_tree(freqs):
         tree.append(branch)
     return tree[0]
 
-def get_huffman_codes(tree):
+
+def get_huffman_codes(tree, values):
     """
-    get dict of colors and codes
+    get dict of labels to codes
     """
     codes = {}
     for i in range(len(tree)):
         if len(tree[i]) == 3:
             # if the tuple is a color, record its code
-            codes[tree[i]] = f"{i}"
+            label = int(np.where((values == tree[i]).all(axis=1))[0][0])
+            codes[label] = f"{i}"
         else:
             # if the tuple is a subtree, search deeper and add 1s/0s
-            subcodes = get_huffman_codes(tree[i])
+            subcodes = get_huffman_codes(tree[i], values)
             for key in subcodes.keys():
                 subcodes[key] = f"{i}{subcodes[key]}"
             codes |= subcodes

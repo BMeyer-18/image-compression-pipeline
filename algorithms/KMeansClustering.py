@@ -1,4 +1,3 @@
-from algorithms.KDSearch import buildKDTree, searchKDTree
 import numpy as np
 from random import randrange, random
 
@@ -7,7 +6,7 @@ def cluster(data, k, max_iter=300):
     cluster
     """
     centroids = pickCentroids(data, k)
-    print('picked centroids')
+    print('picked centroids\n')
     iterations = 0
 
     while iterations < max_iter:
